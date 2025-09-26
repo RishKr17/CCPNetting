@@ -1,38 +1,61 @@
-import sys, traceback
-import pandas as pd
-from pathlib import Path
+import io
 import datetime as dt
-
-try:
-    from pandas_datareader import data as pdr
-except Exception:
-    traceback.print_exc()
-    sys.exit("Dependency import failed. Try: pip install --upgrade pandas pandas_datareader")
+from pathlib import Path
+import pandas as pd
+import requests
 
 OUT = Path("data")
 OUT.mkdir(parents=True, exist_ok=True)
 
-end = dt.date.today()
-start = end - dt.timedelta(days=5*365)  # ~5y back
+# Map FRED series -> simulator column names
+SERIES = {
+    # H.15 Treasuries (percent)
+    "DGS2":  "rate_2y",
+    "DGS5":  "rate_5y",
+    "DGS10": "rate_10y",
+    # H.10 FX (USD per EUR/GBP)
+    "DEXUSEU": "EURUSD",
+    "DEXUSUK": "GBPUSD",
+}
 
-# H.15 Treasuries (percent) -> decimals
-rates = pdr.DataReader(["DGS2", "DGS5", "DGS10"], "fred", start, end)
-rates = rates.ffill().dropna() / 100.0
-rates.columns = ["rate_2y", "rate_5y", "rate_10y"]
-rates = rates.reset_index().rename(columns={"index": "date"})
-rates["date"] = pd.to_datetime(rates["date"]).dt.date
+def fetch_fred_csv(series_id: str) -> pd.DataFrame:
+    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+    r = requests.get(url, timeout=30)
+    r.raise_for_status()
+    df = pd.read_csv(io.StringIO(r.text))
+    # Columns: DATE, <series_id>
+    df.columns = ["date", series_id]
+    df[series_id] = pd.to_numeric(df[series_id].replace(".", pd.NA))
+    df[series_id] = df[series_id].ffill()
+    df["date"] = pd.to_datetime(df["date"])
+    # Keep ~last 5 years
+    cutoff = pd.Timestamp.today().normalize() - pd.Timedelta(days=5*365)
+    return df[df["date"] >= cutoff]
 
-# H.10 FX (USD per EUR/GBP)
-fx = pdr.DataReader(["DEXUSEU", "DEXUSUK"], "fred", start, end).ffill().dropna()
-fx.columns = ["EURUSD", "GBPUSD"]
-fx = fx.reset_index().rename(columns={"index": "date"})
-fx["date"] = pd.to_datetime(fx["date"]).dt.date
+def main():
+    frames = [fetch_fred_csv(sid) for sid in SERIES]
+    from functools import reduce
+    df = reduce(lambda a,b: pd.merge(a,b,on="date", how="inner"), frames).sort_values("date")
 
-# align calendars; trim to ~2y business days (optional)
-df = pd.merge(rates, fx, on="date", how="inner").sort_values("date")
-if len(df) > 520:
-    df = df.iloc[-520:]
+    # Convert Treasuries % -> decimals
+    for sid in ["DGS2","DGS5","DGS10"]:
+        df[sid] = df[sid] / 100.0
 
-df[["date","rate_2y","rate_5y","rate_10y"]].to_csv(OUT/"rates.csv", index=False)
-df[["date","EURUSD","GBPUSD"]].to_csv(OUT/"fx.csv", index=False)
-print("Wrote:", OUT/"rates.csv", "and", OUT/"fx.csv")
+    # Rename to simulator columns
+    df = df.rename(columns={sid: SERIES[sid] for sid in SERIES})
+
+    # Trim to ~2y business days (optional, makes files small)
+    if len(df) > 520:
+        df = df.iloc[-520:]
+
+    rates = df[["date", "rate_2y", "rate_5y", "rate_10y"]].copy()
+    fx    = df[["date", "EURUSD", "GBPUSD"]].copy()
+    rates["date"] = rates["date"].dt.date
+    fx["date"]    = fx["date"].dt.date
+
+    OUT.joinpath("rates.csv").write_text(rates.to_csv(index=False))
+    OUT.joinpath("fx.csv").write_text(fx.to_csv(index=False))
+    print("Wrote:", OUT/"rates.csv", "and", OUT/"fx.csv")
+
+if __name__ == "__main__":
+    main()
