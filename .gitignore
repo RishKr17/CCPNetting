@@ -1,6 +1,22 @@
-.venv/
+# Python cache and virtual env
 __pycache__/
+.venv/
 *.pyc
-.DS_Store
+
+# Streamlit cache
+.streamlit/
+
+# Data and outputs
 outputs/
+data/
+FX/
+IRS/
+*.zip
+*.csv
+
+# IDE/editor configs
 .vscode/
+.idea/
+
+# macOS
+.DS_Store
