@@ -13,7 +13,7 @@ st.title("💹 CCP Netting Simulation")
 st.markdown(
     """
     Simulates mark-to-market (MTM), variation margin (VM), and initial margin (IM)
-    under bilateral vs CCP netting using **real FX data (EURUSD, USDJPY)**.
+    under bilateral vs CCP netting using **real FX data (EURUSD, USDJPY, and more)**.
     """
 )
 
@@ -49,7 +49,12 @@ stress_mult = st.sidebar.slider("Stress multiplier (vol ×)", 1.0, 2.0, 1.5, 0.1
 np.random.seed(42)
 trade_ids = [f"T{i+1}" for i in range(10)]
 notionals = np.random.randint(1e6, 5e6, len(trade_ids))
-pairs = np.random.choice(["EURUSD=X", "USDJPY=X"], len(trade_ids))
+pairs_universe = [
+    "EURUSD=X", "USDJPY=X", "GBPUSD=X", "AUDUSD=X",
+    "USDCAD=X", "NZDUSD=X", "USDCHF=X", "EURJPY=X",
+    "GBPJPY=X", "EURGBP=X"
+]
+pairs = np.random.choice(pairs_universe, len(trade_ids))
 entry_dates = [dt.date.today() - dt.timedelta(days=np.random.randint(300, 500)) for _ in trade_ids]
 
 trades_df = pd.DataFrame({
