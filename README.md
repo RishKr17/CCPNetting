@@ -9,12 +9,37 @@ The project combines **real FX trade data**, **interest rate curves**, and **FX 
 
 
 ## Key Features
-- Consolidation of real FX trade CSVs into unified datasets  
-- Filtering and normalization of USD-based pairs (e.g., EURUSD, USDJPY, and more)  
-- Integration of interest rate and FX market data  
-- Simulation of trade mark-to-market evolution and margin paths  
-- Comparison between **bilateral** and **CCP netting** exposures  
-- Generation of output graphs showing P&L, variation margin (VM), and initial margin (IM) over time
+- Real FX Market Integration
+Pulls daily FX close prices (EURUSD, USDJPY, GBPUSD, AUDUSD, USDCAD, NZDUSD, USDCHF, EURJPY, GBPJPY, EURGBP) via Yahoo Finance.
+
+- Trade Simulation Engine
+Generates random notional trades across multiple currency pairs, computes MTM and PnL from real price changes.
+
+- IM & VM Modeling
+
+Variation Margin (VM): Daily PnL outflows per trade and at portfolio level.
+
+Initial Margin (IM): 99% one-sided 10-day Historical VaR (HS-VaR × √10).
+
+Bilateral vs CCP: Compares IM under stand-alone vs. netted exposures.
+
+Stress Scenario: Applies 1.5× volatility multiplier to simulate 2008-like market stress.
+
+- Liquidity Metrics
+
+Daily VM outflows
+
+Worst 5-day liquidity at risk (rolling sum of outflows)
+
+- Visualizations
+
+Trade-level and portfolio MTM paths
+
+Cumulative VM outflows (Bilateral vs CCP)
+
+IM reduction and liquidity metrics
+
+- Downloadable CSVs for MTM, PnL, and summary results
 
 
 
