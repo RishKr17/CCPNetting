@@ -10,7 +10,7 @@ The project combines **real FX trade data**, **interest rate curves**, and **FX 
 
 ## Key Features
 - Consolidation of real FX trade CSVs into unified datasets  
-- Filtering and normalization of USD-based pairs (e.g., EURUSD, GBPUSD, CADUSD)  
+- Filtering and normalization of USD-based pairs (e.g., EURUSD, USDJPY, and more)  
 - Integration of interest rate and FX market data  
 - Simulation of trade mark-to-market evolution and margin paths  
 - Comparison between **bilateral** and **CCP netting** exposures  
@@ -19,10 +19,19 @@ The project combines **real FX trade data**, **interest rate curves**, and **FX 
 
 
 ## Concepts Illustrated
-- Counterparty Credit Risk  
-- Netting Sets (Bilateral vs. CCP)  
-- Collateral and Margining (IM / VM)  
-- FX Forward Valuation  
-- Monte Carlo Exposure Simulation  
-- Risk Mitigation via Central Clearing
+ 
+- Counterparty Credit Risk
+Measurement of exposure across OTC derivative portfolios.
+
+- Netting Sets: Bilateral vs. CCP
+How central clearing pools offsetting positions to reduce margin.
+
+- Collateral & Margining
+Dynamic computation of variation and initial margin requirements.
+
+- Historical Simulation VaR (99%, 10-day)
+Used to estimate IM under both netting frameworks.
+
+- Stress Testing
+Shock scenario (volatility scaling) to evaluate IM expansion and liquidity strain.
 
