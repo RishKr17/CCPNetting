@@ -22,3 +22,20 @@ def plot_vm_paths(vm_bil_series, vm_ccp_series, savepath: str):
     plt.xlabel("Date")
     fig.savefig(savepath, bbox_inches="tight")
     plt.close(fig)
+
+def plot_sample_trades(trades_df, savepath: str):
+    """
+    Plots sample trade exposures or MTM values over time.
+    Expects a DataFrame with columns like ['date', 'trade_id', 'mtm'].
+    """
+    fig = plt.figure()
+
+    for trade_id, df_trade in trades_df.groupby('trade_id'):
+        plt.plot(df_trade['date'], df_trade['mtm'], label=f"Trade {trade_id}")
+
+    plt.legend()
+    plt.title("Sample Trade MTM Paths")
+    plt.xlabel("Date")
+    plt.ylabel("Mark-to-Market Value (USD)")
+    fig.savefig(savepath, bbox_inches="tight")
+    plt.close(fig)

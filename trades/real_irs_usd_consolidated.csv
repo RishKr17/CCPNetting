@@ -1,0 +1,2 @@
+trade_id,cpty,product,notional,ccy,tenor_yrs,fixed_rate,pay_fixed,ccypair,side
+IRST000001,UNKNOWN,IRS,2200000000.0,USD,5,,True,,
